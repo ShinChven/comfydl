@@ -1,0 +1,142 @@
+#!/bin/bash
+
+# This script downloads IPAdapter models for ComfyUI.
+#
+# Usage:
+#   bash download-ipadapters.sh /path/to/ComfyUI
+#
+# It will download any missing model files to the correct directories.
+
+set -e
+
+# --- Helper Functions ---
+
+command_exists() {
+    command -v "$1" &> /dev/null
+}
+
+set_downloader() {
+    if command_exists aria2c; then
+        DOWNLOADER="aria2c -x 16 -s 16 -k 1M --console-log-level=warn -c"
+        echo "Using aria2c for downloads."
+    elif command_exists wget; then
+        DOWNLOADER="wget -c"
+        echo "Using wget for downloads."
+    else
+        echo "Error: Neither aria2c nor wget found. Please install one of them."
+        exit 1
+    fi
+}
+
+# Note: This function uses the '-c' flag for wget/aria2c. This means it will
+# automatically skip downloading a file if it already exists and is complete.
+# It will resume partial downloads if any. It will NOT delete or overwrite
+# existing complete files.
+download_file() {
+    local url="$1"
+    local filepath="$2"
+    local filename=$(basename "$filepath")
+    local dir=$(dirname "$filepath")
+
+    echo "Downloading $filename..."
+    mkdir -p "$dir"
+
+    if [[ $DOWNLOADER == "aria2c"* ]]; then
+        $DOWNLOADER -d "$dir" -o "$filename" "$url"
+    else
+        $DOWNLOADER -O "$filepath" "$url"
+    fi
+
+    if [ $? -eq 0 ]; then
+        echo "$filename downloaded successfully."
+    else
+        echo "Error downloading $filename."
+    fi
+}
+
+# --- Download Definitions ---
+
+define_downloads() {
+    local COMFYUI_PATH="$1"
+    # Global array
+    DOWNLOADS_DEF=(
+        "https://huggingface.co/h94/IP-Adapter/resolve/main/models/image_encoder/model.safetensors;$COMFYUI_PATH/models/clip_vision/CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors"
+        "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/image_encoder/model.safetensors;$COMFYUI_PATH/models/clip_vision/CLIP-ViT-bigG-14-laion2B-39B-b160k.safetensors"
+        "https://huggingface.co/Kwai-Kolors/Kolors-IP-Adapter-Plus/resolve/main/image_encoder/pytorch_model.bin;$COMFYUI_PATH/models/clip_vision/clip-vit-large-patch14-336.bin"
+        "https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter_sd15.safetensors;$COMFYUI_PATH/models/ipadapter/ip-adapter_sd15.safetensors"
+        "https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter_sd15_light_v11.bin;$COMFYUI_PATH/models/ipadapter/ip-adapter_sd15_light_v11.bin"
+        "https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter-plus_sd15.safetensors;$COMFYUI_PATH/models/ipadapter/ip-adapter-plus_sd15.safetensors"
+        "https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter-plus-face_sd15.safetensors;$COMFYUI_PATH/models/ipadapter/ip-adapter-plus-face_sd15.safetensors"
+        "https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter-full-face_sd15.safetensors;$COMFYUI_PATH/models/ipadapter/ip-adapter-full-face_sd15.safetensors"
+        "https://huggingface.co/h94/IP-Adapter/resolve/main/models/ip-adapter_sd15_vit-G.safetensors;$COMFYUI_PATH/models/ipadapter/ip-adapter_sd15_vit-G.safetensors"
+        "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl_vit-h.safetensors;$COMFYUI_PATH/models/ipadapter/ip-adapter_sdxl_vit-h.safetensors"
+        "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter-plus_sdxl_vit-h.safetensors;$COMFYUI_PATH/models/ipadapter/ip-adapter-plus_sdxl_vit-h.safetensors"
+        "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter-plus-face_sdxl_vit-h.safetensors;$COMFYUI_PATH/models/ipadapter/ip-adapter-plus-face_sdxl_vit-h.safetensors"
+        "https://huggingface.co/h94/IP-Adapter/resolve/main/sdxl_models/ip-adapter_sdxl.safetensors;$COMFYUI_PATH/models/ipadapter/ip-adapter_sdxl.safetensors"
+        "https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sd15.bin;$COMFYUI_PATH/models/ipadapter/ip-adapter-faceid_sd15.bin"
+        "https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid-plusv2_sd15.bin;$COMFYUI_PATH/models/ipadapter/ip-adapter-faceid-plusv2_sd15.bin"
+        "https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid-portrait-v11_sd15.bin;$COMFYUI_PATH/models/ipadapter/ip-adapter-faceid-portrait-v11_sd15.bin"
+        "https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sdxl.bin;$COMFYUI_PATH/models/ipadapter/ip-adapter-faceid_sdxl.bin"
+        "https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid-plusv2_sdxl.bin;$COMFYUI_PATH/models/ipadapter/ip-adapter-faceid-plusv2_sdxl.bin"
+        "https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid-portrait_sdxl.bin;$COMFYUI_PATH/models/ipadapter/ip-adapter-faceid-portrait_sdxl.bin"
+        "https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid-portrait_sdxl_unnorm.bin;$COMFYUI_PATH/models/ipadapter/ip-adapter-faceid-portrait_sdxl_unnorm.bin"
+        "https://huggingface.co/ostris/ip-composition-adapter/resolve/main/ip_plus_composition_sd15.safetensors;$COMFYUI_PATH/models/ipadapter/ip_plus_composition_sd15.safetensors"
+        "https://huggingface.co/ostris/ip-composition-adapter/resolve/main/ip_plus_composition_sdxl.safetensors;$COMFYUI_PATH/models/ipadapter/ip_plus_composition_sdxl.safetensors"
+        "https://huggingface.co/Kwai-Kolors/Kolors-IP-Adapter-Plus/resolve/main/ip_adapter_plus_general.bin?download=true;$COMFYUI_PATH/models/ipadapter/Kolors-IP-Adapter-Plus.bin"
+        "https://huggingface.co/Kwai-Kolors/Kolors-IP-Adapter-FaceID-Plus/resolve/main/ipa-faceid-plus.bin?download=true;$COMFYUI_PATH/models/ipadapter/Kolors-IP-Adapter-FaceID-Plus.bin"
+        "https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sd15_lora.safetensors;$COMFYUI_PATH/models/loras/ip-adapter-faceid_sd15_lora.safetensors"
+        "https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid-plusv2_sd15_lora.safetensors;$COMFYUI_PATH/models/loras/ip-adapter-faceid-plusv2_sd15_lora.safetensors"
+        "https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid_sdxl_lora.safetensors;$COMFYUI_PATH/models/loras/ip-adapter-faceid_sdxl_lora.safetensors"
+        "https://huggingface.co/h94/IP-Adapter-FaceID/resolve/main/ip-adapter-faceid-plusv2_sdxl_lora.safetensors;$COMFYUI_PATH/models/loras/ip-adapter-faceid-plusv2_sdxl_lora.safetensors"
+        "https://huggingface.co/MonsterMMORPG/tools/resolve/main/1k3d68.onnx;$COMFYUI_PATH/models/insightface/1k3d68.onnx"
+        "https://huggingface.co/MonsterMMORPG/tools/resolve/main/2d106det.onnx;$COMFYUI_PATH/models/insightface/2d106det.onnx"
+        "https://huggingface.co/MonsterMMORPG/tools/resolve/main/genderage.onnx;$COMFYUI_PATH/models/insightface/genderage.onnx"
+        "https://huggingface.co/MonsterMMORPG/tools/resolve/main/glintr100.onnx;$COMFYUI_PATH/models/insightface/glintr100.onnx"
+        "https://huggingface.co/MonsterMMORPG/tools/resolve/main/scrfd_10g_bnkps.onnx;$COMFYUI_PATH/models/insightface/scrfd_10g_bnkps.onnx"
+    )
+}
+
+# --- Main ---
+
+main() {
+    if [ -z "$1" ]; then
+        echo "Usage: $0 /path/to/ComfyUI"
+        exit 1
+    fi
+
+    if [ ! -d "$1" ]; then
+        echo "Error: Directory '$1' not found."
+        exit 1
+    fi
+
+    local COMFYUI_PATH=$(cd "$1" && pwd)
+    
+    if [ ! -f "$COMFYUI_PATH/main.py" ]; then
+        echo "Warning: '$COMFYUI_PATH' does not look like a ComfyUI directory."
+        read -p "Continue anyway? (y/n) " -n 1 -r; echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then exit 1; fi
+    fi
+
+    set_downloader
+    define_downloads "$COMFYUI_PATH"
+
+    echo -e "
+Starting downloads for ComfyUI at: $COMFYUI_PATH"
+    echo "Checking for missing files..."
+
+    for item in "${DOWNLOADS_DEF[@]}"; do
+        IFS=';' read -r url dest_path <<< "$item"
+        # The -c flag in the downloader will handle skipping completed files,
+        # but we add a check here to be more explicit and avoid downloader output.
+        if [ -f "$dest_path" ]; then
+            echo "Skipping existing file: $(basename "$dest_path")"
+        else
+            download_file "$url" "$dest_path"
+        fi
+    done
+    
+    echo -e "
+All downloads complete!"
+}
+
+main "$@"
