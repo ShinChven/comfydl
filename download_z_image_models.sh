@@ -63,6 +63,7 @@ define_downloads() {
         "https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/text_encoders/qwen_3_4b.safetensors;$COMFYUI_PATH/models/text_encoders/qwen_3_4b.safetensors"
         "https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/diffusion_models/z_image_turbo_bf16.safetensors;$COMFYUI_PATH/models/diffusion_models/z_image_turbo_bf16.safetensors"
         "https://huggingface.co/Comfy-Org/z_image_turbo/resolve/main/split_files/vae/ae.safetensors;$COMFYUI_PATH/models/vae/ae.safetensors"
+        "https://huggingface.co/alibaba-pai/Z-Image-Turbo-Fun-Controlnet-Union/resolve/main/Z-Image-Turbo-Fun-Controlnet-Union.safetensors;$COMFYUI_PATH/models/model_patches/Z-Image-Turbo-Fun-Controlnet-Union.safetensors"
     )
 }
 
