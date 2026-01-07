@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# This script downloads Qwen Image Edit models for ComfyUI.
+# This script downloads Flux 1 models for ComfyUI.
 #
 # Usage:
-#   bash download_qwen_image_edit_models.sh /path/to/ComfyUI
+#   bash download_flux_models.sh /path/to/ComfyUI
 #
 # It will download any missing model files to the correct directories.
 
@@ -60,10 +60,10 @@ define_downloads() {
     local COMFYUI_PATH="$1"
     # Global array
     DOWNLOADS_DEF=(
-        "https://huggingface.co/Comfy-Org/HunyuanVideo_1.5_repackaged/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors;$COMFYUI_PATH/models/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors"
-        "https://huggingface.co/lightx2v/Qwen-Image-Edit-2511-Lightning/resolve/main/Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors;$COMFYUI_PATH/models/loras/Qwen-Image-Edit-2511-Lightning-4steps-V1.0-bf16.safetensors"
-        "https://huggingface.co/Comfy-Org/Qwen-Image-Edit_ComfyUI/resolve/main/split_files/diffusion_models/qwen_image_edit_2511_bf16.safetensors;$COMFYUI_PATH/models/diffusion_models/qwen_image_edit_2511_bf16.safetensors"
-        "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/vae/qwen_image_vae.safetensors;$COMFYUI_PATH/models/vae/qwen_image_vae.safetensors"
+        "https://huggingface.co/Comfy-Org/flux1-dev/resolve/main/flux1-dev.safetensors;$COMFYUI_PATH/models/diffusion_models/flux1-dev.safetensors"
+        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/clip_l.safetensors;$COMFYUI_PATH/models/text_encoders/clip_l.safetensors"
+        "https://huggingface.co/comfyanonymous/flux_text_encoders/resolve/main/t5xxl_fp16.safetensors;$COMFYUI_PATH/models/text_encoders/t5xxl_fp16.safetensors"
+        "https://huggingface.co/Comfy-Org/Lumina_Image_2.0_Repackaged/resolve/main/split_files/vae/ae.safetensors;$COMFYUI_PATH/models/vae/ae.safetensors"
     )
 }
 
