@@ -12,24 +12,27 @@ It replaces the legacy collection of shell scripts with a unified, configurable 
 -   **Resumable**: Uses `aria2c` (recommended) or `wget` for reliable, resumable downloads.
 -   **Configurable**: Set your ComfyUI root path and API tokens once, and they are remembered.
 
+## Requirements
+
+-   **Python 3.8+**
+-   **Download Tools**: `aria2c` (highly recommended for speed) or `wget`.
+    -   macOS: `brew install aria2`
+    -   Linux: `sudo apt install aria2`
+    -   Windows: `choco install aria2`
+
 ## Installation
 
-### Bash (Debian/Ubuntu)
-
 ```bash
-apt-get update && apt-get install aria2
-pip install -U git+https://github.com/ShinChven/comfydl.git
-comfydl set COMFYUI_ROOT /content/ComfyUI
-mkdir -p /content/ComfyUI/
+pip install git+https://github.com/ShinChven/comfydl.git
 ```
 
-### Jupyter / Colab
+## Jupyter / Colab Setup
 
 ```python
 !apt-get update && apt-get install aria2
-!pip install -U git+https://github.com/ShinChven/comfydl.git
+!pip install -u git+https://github.com/ShinChven/comfydl.git
 !comfydl set COMFYUI_ROOT /content/ComfyUI
-!mkdir -p /content/ComfyUI/
+!mkdir /content/ComfyUI/
 ```
 
 ## Configuration
