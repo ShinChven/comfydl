@@ -43,15 +43,5 @@ comfydl/model_sources/
 
 ## Testing
 
-Before committing, test your new source locally:
-
-1.  Ensure you have your development environment set up.
-2.  Run `comfydl` pointing to your new file or by name if you are in the project root.
-
-    ```bash
-    # Test by filename
-    python -m comfydl.main your_new_source_name /tmp/test_download
-    ```
-    *   This will attempt to download the files to `/tmp/test_download`.
-    *   Verify that files land in the correct subdirectories (e.g., `/tmp/test_download/models/checkpoints/...`).
+No need.
 
