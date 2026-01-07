@@ -41,6 +41,10 @@ comfydl/model_sources/
     *   Use the API download link: `https://civitai.com/api/download/models/ID`
     *   Do **not** include the token in the URL. `comfydl` handles appending the user's token automatically.
 
+## Versions
+
+If the model has multiple sizes, should create multiple source files for each size. 
+
 ## Testing
 
 No need.

@@ -1,4 +1,4 @@
-description: "Download Qwen Image Layered models (BF16)"
+description: "Qwen Image Layered Model (BF16)"
 source: "https://docs.comfy.org/tutorials/image/qwen/qwen-image-layered"
 downloads:
   - url: "https://huggingface.co/Comfy-Org/HunyuanVideo_1.5_repackaged/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors"
