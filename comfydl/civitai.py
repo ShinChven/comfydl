@@ -33,10 +33,13 @@ def fetch_model_version(version_id):
         print(f"Error fetching model info: {e}")
         return None
 
-def determine_folder(model_type):
+def determine_folder(model_type, base_model=None):
     # Map Civitai types to ComfyUI folders
     # Checkpoints, LORA, LoCon, TextualInversion, Hypernetwork, ControlNet, VAE, Upscaler, MotionModule
     
+    if model_type == "Checkpoint" and base_model and "Flux" in base_model:
+        return "models/diffusion_models"
+
     mapping = {
         "Checkpoint": "models/checkpoints",
         "LORA": "models/loras",
@@ -116,7 +119,8 @@ def process_civitai_download(input_str, comfyui_root, downloader=None):
         return False
         
     # Determine folder
-    subfolder = determine_folder(model_type)
+    base_model = data.get("baseModel")
+    subfolder = determine_folder(model_type, base_model)
     dest_path = os.path.join(comfyui_root, subfolder, file_name)
     
     print(f"Target: {subfolder}/{file_name}")
