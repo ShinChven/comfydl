@@ -30,7 +30,7 @@ pip install git+https://github.com/ShinChven/comfydl.git
 
 ```python
 !apt-get update && apt-get install aria2
-!pip install -u git+https://github.com/ShinChven/comfydl.git
+!pip install git+https://github.com/ShinChven/comfydl.git
 !comfydl set COMFYUI_ROOT /content/ComfyUI
 !mkdir /content/ComfyUI/
 ```
