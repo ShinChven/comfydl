@@ -5,9 +5,11 @@
 ## Install ComfyUI Models with Ease
 
 ```bash
-comfydl flux
+comfydl flux1
+comfydl flux1_dev_fp8
 comfydl pony
 comfydl sd15
+comfydl common_vae
 comfydl qwen_image_edit
 comfydl chilloutmix
 comfydl civitai 354657 # Dreamshaper lightning DPM++ SDE
