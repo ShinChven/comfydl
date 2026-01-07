@@ -14,22 +14,23 @@ It replaces the legacy collection of shell scripts with a unified, configurable 
 
 ## Installation
 
-You can install `comfydl` directly from the source:
+### Bash (Debian/Ubuntu)
 
 ```bash
-git clone https://github.com/ShinChven/download-ipadapter-for-comfyui.git
-cd download-ipadapter-for-comfyui
-pip install -e .
+apt-get update && apt-get install aria2
+pip install -U git+https://github.com/ShinChven/comfydl.git
+comfydl set COMFYUI_ROOT /content/ComfyUI
+mkdir -p /content/ComfyUI/
 ```
 
-*Using a virtual environment is recommended.*
+### Jupyter / Colab
 
-## Requirements
-
--   **Python 3.8+**
--   **Download Tools**: `aria2c` (highly recommended for speed) or `wget`.
-    -   macOS: `brew install aria2`
-    -   Linux: `sudo apt install aria2`
+```python
+!apt-get update && apt-get install aria2
+!pip install -U git+https://github.com/ShinChven/comfydl.git
+!comfydl set COMFYUI_ROOT /content/ComfyUI
+!mkdir -p /content/ComfyUI/
+```
 
 ## Configuration
 
