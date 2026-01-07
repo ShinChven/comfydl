@@ -4,20 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "comfydl"
-version = "0.1.0"
-authors = [
-  { name="ShinChven", email="shinchven@gmail.com" },
-]
+version = "0.1.1"
+authors = [{ name = "ShinChven", email = "shinchven@gmail.com" }]
 description = "A robust CLI tool for downloading models for ComfyUI"
 readme = "README.md"
 requires-python = ">=3.8"
-license = {text = "MIT"}
-dependencies = [
-    "PyYAML",
-    "requests",
-    "tqdm",
-    "questionary",
-]
+license = { text = "MIT" }
+dependencies = ["PyYAML", "requests", "tqdm", "questionary"]
 
 [project.scripts]
 comfydl = "comfydl.main:main"
