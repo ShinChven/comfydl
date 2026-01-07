@@ -12,6 +12,7 @@ setup(
         'PyYAML',
         'requests',
         'tqdm',
+        'questionary',
     ],
     entry_points={
         'console_scripts': [

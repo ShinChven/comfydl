@@ -5,6 +5,7 @@ import yaml
 from pathlib import Path
 from .config import set_config_value, get_config_value
 from .utils import check_downloader, download_file
+import questionary
 
 def handle_set(key, value):
     valid_keys = ["COMFYUI_ROOT", "CIVITAI_TOKEN"]
@@ -40,6 +41,55 @@ def resolve_model_source(source_name):
     # Maybe package provided sources? For now we assume local execution context
     return None
 
+def get_available_sources():
+    sources = set()
+    
+    # Check bundled
+    package_dir = Path(__file__).parent
+    bundled_sources = package_dir / "model_sources"
+    if bundled_sources.exists():
+        for f in bundled_sources.glob("*.yaml"):
+            sources.add(f.stem)
+    
+    # Check local
+    cwd_sources = Path("model_sources")
+    if cwd_sources.exists():
+        for f in cwd_sources.glob("*.yaml"):
+            sources.add(f.stem)
+            
+    return sorted(list(sources))
+
+def process_download(model_source_path, comfyui_path, downloader=None):
+    if not downloader:
+        downloader = check_downloader()
+        if not downloader:
+            print("Error: Neither aria2c nor wget found. Please install one of them.")
+            return False
+            
+    print(f"Using ComfyUI path: {comfyui_path}")
+    print(f"\nProcessing: {os.path.basename(model_source_path)}")
+    
+    try:
+        with open(model_source_path, 'r') as f:
+            config_data = yaml.safe_load(f)
+    except Exception as e:
+        print(f"Error loading YAML: {e}")
+        return False
+        
+    downloads = config_data if isinstance(config_data, list) else config_data.get('downloads', [])
+    
+    for item in downloads:
+        url = item.get('url')
+        dest = item.get('dest')
+        
+        if not url or not dest:
+            print(f"Skipping invalid item: {item}")
+            continue
+            
+        full_dest = os.path.join(comfyui_path, dest)
+        download_file(url, full_dest, downloader)
+    return True
+
 def main():
     parser = argparse.ArgumentParser(description="ComfyDL: ComfyUI Model Downloader")
     subparsers = parser.add_subparsers(dest="command")
@@ -71,7 +121,7 @@ def main():
 
     # If not set, treat as download arguments
     parser = argparse.ArgumentParser(description="ComfyDL: ComfyUI Model Downloader")
-    parser.add_argument("model_source", help="Model source name (e.g. 'flux') or path to YAML config")
+    parser.add_argument("model_source", nargs="?", help="Model source name (e.g. 'flux') or path to YAML config")
     parser.add_argument("comfyui_path", nargs="?", help="ComfyUI root directory override")
     
     # If the first arg is 'set', this parser would fail/confuse, but we handled 'set' above.
@@ -83,12 +133,9 @@ def main():
     args = parser.parse_args()
     
     # Logic for download
-    model_source_path = resolve_model_source(args.model_source)
-    if not model_source_path:
-        print(f"Error: Model source '{args.model_source}' not found.")
-        print("Expected a file path or a name in 'model_sources/' directory (e.g. 'flux' for 'model_sources/flux.yaml').")
-        sys.exit(1)
-        
+
+    # Logic for download
+    # Check for ComfyUI path first as it is required for any download
     comfyui_path = args.comfyui_path
     if not comfyui_path:
         comfyui_path = get_config_value("COMFYUI_ROOT")
@@ -103,57 +150,45 @@ def main():
     if not os.path.exists(comfyui_path):
         print(f"Error: ComfyUI directory '{comfyui_path}' does not exist.")
         sys.exit(1)
-        
+
     # Check for main.py to confirm it's likely ComfyUI
     if not os.path.exists(os.path.join(comfyui_path, "main.py")):
         print(f"Warning: '{comfyui_path}' does not look like a ComfyUI directory (main.py missing).")
-        # proceeding anyway as per user likely knows best, or prompt? 
-        # Shell scripts prompted. Let's just warn.
-        
-    print(f"Using ComfyUI path: {comfyui_path}")
-    print(f"Loading models from: {model_source_path}")
-    
-    try:
-        with open(model_source_path, 'r') as f:
-            config_data = yaml.safe_load(f)
-    except Exception as e:
-        print(f"Error loading YAML: {e}")
-        sys.exit(1)
-        
-    if not isinstance(config_data, list):
-        # Maybe config has a 'models' key? Shell scripts just had a list.
-        # Let's assume the YAML will be a list of dicts or list of strings?
-        # Shell script had: "url;dest"
-        # YAML should probably be structured:
-        # - url: ...
-        #   dest: ...
-        # Or just a list of downloads.
-        # I'll support a list of objects: {url: "", dest: ""}
-        pass
 
     downloader = check_downloader()
     if not downloader:
         print("Error: Neither aria2c nor wget found. Please install one of them.")
         sys.exit(1)
     print(f"Using downloader: {downloader}")
-    
-    downloads = config_data if isinstance(config_data, list) else config_data.get('downloads', [])
-    
-    for item in downloads:
-        url = item.get('url')
-        dest = item.get('dest')
+
+    if args.model_source:
+        model_source_path = resolve_model_source(args.model_source)
+        if not model_source_path:
+            print(f"Error: Model source '{args.model_source}' not found.")
+            print("Expected a file path or a name in 'model_sources/' directory (e.g. 'flux' for 'model_sources/flux.yaml').")
+            sys.exit(1)
         
-        if not url or not dest:
-            print(f"Skipping invalid item: {item}")
-            continue
+        process_download(model_source_path, comfyui_path, downloader)
+    else:
+        # Interactive mode
+        sources = get_available_sources()
+        if not sources:
+            print("No model sources found in 'model_sources' directory.")
+            sys.exit(1)
             
-        # Dest is relative to comfyui_path usually?
-        # Shell scripts had "$COMFYUI_PATH/models/..." in the definition string.
-        # In YAML, we should probably make dest relative to ComfyUI root.
-        # e.g. "models/checkpoints/flux.safetensors"
+        selected = questionary.checkbox(
+            "Select model sources to download:",
+            choices=sources
+        ).ask()
         
-        full_dest = os.path.join(comfyui_path, dest)
-        download_file(url, full_dest, downloader)
+        if not selected:
+            print("No sources selected.")
+            sys.exit(0)
+            
+        for source_name in selected:
+             model_source_path = resolve_model_source(source_name)
+             if model_source_path:
+                 process_download(model_source_path, comfyui_path, downloader)
 
 if __name__ == "__main__":
     main()
