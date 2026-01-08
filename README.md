@@ -23,8 +23,10 @@ comfydl civitai 354657 # Dreamshaper lightning DPM++ SDE
 ## Features
 
 -   **Smart Downloads**: Automatically places files in the correct `models/*` subdirectories (e.g., `models/ipadapter`, `models/diffusion_models`).
+-   **Installation Status & Audit**: Use `sources --installed` to see exactly what's installed, including file sizes and partial installation status.
+-   **Smart Removal**: Safely uninstall models by source name using the `rm` command, including dry-run and interative modes.
 -   **Multi-Source Support**: Easily download from Hugging Face, Civitai, and more using YAML configurations.
--   **Interactive Menu**: Select models to download from a user-friendly list.
+-   **Interactive Menus**: User-friendly CLI for both downloading and removing models.
 -   **Resumable**: Uses `aria2c` (recommended) or `wget` for reliable, resumable downloads.
 -   **Configurable**: Set your ComfyUI root path and API tokens once, and they are remembered.
 
@@ -106,6 +108,44 @@ comfydl <model_source_name> [comfyui_path_override]
 comfydl flux
 comfydl ipadapters
 comfydl z_image
+```
+
+### Listing & Checking Models
+
+List all available model sources or check their installation status with file sizes.
+
+```bash
+# List all available names
+comfydl sources
+
+# Check installation status with a detailed tree view and file sizes
+comfydl sources --installed
+
+# List all large files in your ComfyUI models directory
+comfydl list
+```
+
+**Status Indicators:**
+- `[✓]` Entire source/component is installed.
+- `[ ]` Source/component is missing.
+- `[!]` Source is partially installed (some components are missing).
+
+### Removing Models
+
+Safely remove files associated with one or more model sources.
+
+```bash
+# Uninstall a specific source
+comfydl rm flux1
+
+# Interactive removal menu
+comfydl rm
+
+# Dry run (see what would be deleted)
+comfydl rm flux1 --dry-run
+
+# Force removal without confirmation
+comfydl rm flux1 -f
 ```
 
 ### Civitai Download
