@@ -162,7 +162,158 @@ def process_download(model_source_path, comfyui_path, downloader=None):
         download_file(url, full_dest, downloader)
     return True
 
+def handle_rm(model_sources, comfyui_path, force=False, dry_run=False):
+    if not model_sources:
+        # Interactive selection
+        available_sources = get_available_sources()
+        if not available_sources:
+            print("No model sources available.")
+            return
+        
+        model_sources = questionary.checkbox(
+            "Select model sources to remove:",
+            choices=available_sources
+        ).ask()
+        
+        if not model_sources:
+            print("No sources selected.")
+            return
+
+    for source_name in model_sources:
+        model_source_path = resolve_model_source(source_name)
+        if not model_source_path:
+            print(f"Error: Model source '{source_name}' not found.")
+            continue
+            
+        print(f"\nProcessing removal for: {source_name}")
+        
+        try:
+            with open(model_source_path, 'r') as f:
+                config_data = yaml.safe_load(f)
+        except Exception as e:
+            print(f"Error loading YAML: {e}")
+            continue
+            
+        downloads = []
+        if isinstance(config_data, list):
+            downloads = config_data
+        elif isinstance(config_data, dict):
+            downloads = config_data.get('downloads', [])
+            
+        if not downloads:
+            print("No files to remove in this source.")
+            continue
+            
+        files_to_delete = []
+        total_size = 0
+        
+        for item in downloads:
+            dest = item.get('dest')
+            if not dest:
+                continue
+            full_path = os.path.join(comfyui_path, dest)
+            if os.path.exists(full_path):
+                if os.path.isfile(full_path):
+                    size = os.path.getsize(full_path)
+                    files_to_delete.append((full_path, size))
+                    total_size += size
+                else:
+                    print(f"Warning: '{full_path}' exists but is a directory. Skipping.")
+        
+        if not files_to_delete:
+            print("No installed files found for this source.")
+            continue
+            
+        print("Files to be removed:")
+        for path, size in files_to_delete:
+            rel_path = os.path.relpath(path, comfyui_path)
+            print(f"  - [{format_size(size):>10}] {rel_path}")
+        
+        print(f"\nTotal space to reclaim: {format_size(total_size)}")
+        
+        if dry_run:
+            print("Dry run: skipping deletion.")
+            continue
+            
+        if not force:
+            confirmed = questionary.confirm(f"Are you sure you want to delete these {len(files_to_delete)} files?").ask()
+            if not confirmed:
+                print("Skipped.")
+                continue
+                
+        for path, _ in files_to_delete:
+            try:
+                os.remove(path)
+                rel_path = os.path.relpath(path, comfyui_path)
+                print(f"Deleted: {rel_path}")
+            except Exception as e:
+                print(f"Error deleting {path}: {e}")
+
 from .civitai import process_civitai_download
+
+def list_sources_status(comfyui_path):
+    sources = get_available_sources()
+    if not sources:
+        print("No model sources found.")
+        return
+
+    print(f"Installation status in: {comfyui_path}")
+    print("Legend: [✓] Installed, [ ] Missing, [!] Partially Installed\n")
+    
+    for source_name in sources:
+        model_source_path = resolve_model_source(source_name)
+        if not model_source_path:
+            continue
+            
+        try:
+            with open(model_source_path, 'r') as f:
+                config_data = yaml.safe_load(f)
+        except Exception:
+            continue
+            
+        downloads = []
+        if isinstance(config_data, list):
+            downloads = config_data
+        elif isinstance(config_data, dict):
+            downloads = config_data.get('downloads', [])
+            
+        if not downloads:
+            continue
+
+        items_status = []
+        source_total_size = 0
+        for item in downloads:
+            dest = item.get('dest')
+            if not dest:
+                continue
+            full_path = os.path.join(comfyui_path, dest)
+            is_installed = os.path.exists(full_path) and os.path.isfile(full_path)
+            size = 0
+            if is_installed:
+                size = os.path.getsize(full_path)
+                source_total_size += size
+            items_status.append((dest, is_installed, size))
+            
+        installed_count = sum(1 for _, is_installed, _ in items_status if is_installed)
+        total_count = len(items_status)
+        
+        if installed_count == 0:
+            continue
+
+        if total_count == 1:
+            dest, is_installed, size = items_status[0]
+            status_symbol = "✓" if is_installed else " "
+            size_str = f" [{format_size(size):>10}]" if is_installed else ""
+            print(f"  [{status_symbol}] {source_name:<60}{size_str}")
+        else:
+            status_symbol = "✓" if installed_count == total_count else ("!" if installed_count > 0 else " ")
+            total_size_str = f" [{format_size(source_total_size):>10}]"
+            print(f"  [{status_symbol}] {source_name:<60} ({installed_count}/{total_count}){total_size_str}")
+            for i, (dest, is_installed, size) in enumerate(items_status):
+                connector = "└──" if i == len(items_status) - 1 else "├──"
+                item_symbol = "✓" if is_installed else " "
+                size_str = f" [{format_size(size):>10}]" if is_installed else ""
+                print(f"    {connector} [{item_symbol}] {os.path.basename(dest):<60}{size_str}")
 
 def main():
     parser = argparse.ArgumentParser(description="ComfyDL: ComfyUI Model Downloader")
@@ -179,11 +330,20 @@ def main():
     civitai_parser.add_argument("comfyui_path", nargs="?", help="ComfyUI root directory override")
 
     # Sources command
-    subparsers.add_parser("sources", help="List available model sources")
+    sources_parser = subparsers.add_parser("sources", help="List available model sources")
+    sources_parser.add_argument("--installed", action="store_true", help="Show installation status in ComfyUI")
+    sources_parser.add_argument("--comfyui_path", help="ComfyUI root directory override")
 
     # List command (local models)
     list_parser = subparsers.add_parser("list", help="List downloaded models in ComfyUI models directory")
     list_parser.add_argument("comfyui_path", nargs="?", help="ComfyUI root directory override")
+
+    # Rm command
+    rm_parser = subparsers.add_parser("rm", help="Remove models associated with a model source")
+    rm_parser.add_argument("model_sources", nargs="*", help="Model source names to remove")
+    rm_parser.add_argument("-f", "--force", action="store_true", help="Force removal without confirmation")
+    rm_parser.add_argument("--dry-run", action="store_true", help="Show what would be removed without deleting")
+    rm_parser.add_argument("--comfyui_path", help="ComfyUI root directory override")
 
     # To handle the existing "default" behavior (comfydl <source>), we check sys.argv
     # If the first argument is a known command, we parse.
@@ -217,13 +377,30 @@ def main():
             process_civitai_download(args.version_id, comfyui_path)
             return
         elif sys.argv[1] == "sources":
-            sources = get_available_sources()
-            if not sources:
-                print("No model sources found.")
+            args, _ = parser.parse_known_args()
+            if args.installed:
+                comfyui_path = args.comfyui_path
+                if not comfyui_path:
+                    comfyui_path = get_config_value("COMFYUI_ROOT")
+                
+                if not comfyui_path:
+                    print("Error: ComfyUI path not specified for --installed flag.")
+                    sys.exit(1)
+                
+                comfyui_path = os.path.abspath(comfyui_path)
+                if not os.path.exists(comfyui_path):
+                    print(f"Error: ComfyUI directory '{comfyui_path}' does not exist.")
+                    sys.exit(1)
+                
+                list_sources_status(comfyui_path)
             else:
-                print("Available model sources:")
-                for s in sources:
-                    print(f"  - {s}")
+                sources = get_available_sources()
+                if not sources:
+                    print("No model sources found.")
+                else:
+                    print("Available model sources:")
+                    for s in sources:
+                        print(f"  - {s}")
             return
         elif sys.argv[1] == "list":
             args, _ = parser.parse_known_args()
@@ -261,6 +438,19 @@ def main():
                 print("  (No models found)")
             else:
                 print(f"\nTotal size: {format_size(total_size)}")
+            return
+        elif sys.argv[1] == "rm":
+            args, _ = parser.parse_known_args()
+            comfyui_path = args.comfyui_path
+            if not comfyui_path:
+                comfyui_path = get_config_value("COMFYUI_ROOT")
+            
+            if not comfyui_path:
+                print("Error: ComfyUI path not specified.")
+                sys.exit(1)
+            
+            comfyui_path = os.path.abspath(comfyui_path)
+            handle_rm(args.model_sources, comfyui_path, force=args.force, dry_run=args.dry_run)
             return
 
     # If not a subcommand, use the original parser logic for sources
