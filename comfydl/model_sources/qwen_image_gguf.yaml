@@ -1,0 +1,14 @@
+description: "Qwen Image - GGUF Quantized (Q4_K_M)"
+source: "https://huggingface.co/city96/Qwen-Image-gguf"
+downloads:
+  # Main Model (GGUF Q4_K_M - Balanced quality/size)
+  - url: "https://huggingface.co/city96/Qwen-Image-gguf/resolve/main/qwen-image-Q4_K_M.gguf"
+    dest: "models/diffusion_models/qwen-image-Q4_K_M.gguf"
+
+  # Text Encoder
+  - url: "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors"
+    dest: "models/text_encoders/qwen_2.5_vl_7b_fp8_scaled.safetensors"
+
+  # VAE
+  - url: "https://huggingface.co/Comfy-Org/Qwen-Image_ComfyUI/resolve/main/split_files/vae/qwen_image_vae.safetensors"
+    dest: "models/vae/qwen_image_vae.safetensors"
