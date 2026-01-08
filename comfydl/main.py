@@ -395,8 +395,8 @@ def main():
     set_parser.add_argument("value", help="Configuration value")
     
     # Civitai command
-    civitai_parser = subparsers.add_parser("civitai", help="Download model from Civitai by Model Version ID or URL")
-    civitai_parser.add_argument("version_id", help="Civitai Model Version ID (integer) or Download URL")
+    civitai_parser = subparsers.add_parser("civitai", help="Download model from Civitai by Model Version ID, URL, or AIR URN")
+    civitai_parser.add_argument("version_id", help="Civitai Model Version ID (integer), Download URL, or AIR URN")
     civitai_parser.add_argument("comfyui_path", nargs="?", help="ComfyUI root directory override")
 
     # Sources command

@@ -17,7 +17,8 @@ comfydl dreamshaper
 comfydl common_vae
 comfydl qwen_image_edit
 comfydl chilloutmix
-comfydl civitai 354657 # Dreamshaper lightning DPM++ SDE
+comfydl civitai 354657 # By Version ID
+comfydl civitai "urn:air:zimageturbo:lora:civitai:12345@12345" # By AIR URN
 ```
 
 ## Features
@@ -25,8 +26,7 @@ comfydl civitai 354657 # Dreamshaper lightning DPM++ SDE
 -   **Smart Downloads**: Automatically places files in the correct `models/*` subdirectories (e.g., `models/ipadapter`, `models/diffusion_models`).
 -   **Installation Status & Audit**: Use `sources --installed` to see exactly what's installed, including file sizes and partial installation status.
 -   **Smart Removal**: Safely uninstall models by source name using the `rm` command, including dry-run and interative modes.
--   **Multi-Source Support**: Easily download from Hugging Face, Civitai, and more using YAML configurations.
--   **Interactive Menus**: User-friendly CLI for both downloading and removing models.
+-   **Civitai Integration**: Quick download via Model ID, Version ID, URLs, or **AIR URNs** (`urn:air:...@version`).
 -   **Resumable**: Uses `aria2c` (recommended) or `wget` for reliable, resumable downloads.
 -   **Configurable**: Set your ComfyUI root path and API tokens once, and they are remembered.
 
@@ -68,23 +68,14 @@ pip install -U git+https://github.com/ShinChven/comfydl.git
 
 ## Configuration
 
-Before starting, configure your ComfyUI root directory. You can also set a Civitai token if downloading restricted models.
+Before starting, configure your ComfyUI root directory and any necessary API tokens. These settings are persisted locally in `~/.comfydl_config`.
 
-```bash
-# Set ComfyUI Root Path
-comfydl set COMFYUI_ROOT /path/to/your/ComfyUI
-
-# (Optional) Set Civitai API Token
-comfydl set CIVITAI_TOKEN your_api_token
-
-# (Optional) Set Hugging Face Token (for private/gated models)
-comfydl set HF_TOKEN your_hf_token
-
-# (Optional) Set Custom Model Sources Path
-comfydl set MODEL_SOURCES_PATH /path/to/your/custom/sources
-```
-
-*These settings are persisted locally in `~/.comfydl_config`.*
+| Key | Description | Command Example |
+| :--- | :--- | :--- |
+| `COMFYUI_ROOT` | **Required**. Path to your ComfyUI root directory. | `comfydl set COMFYUI_ROOT /path/to/ComfyUI` |
+| `CIVITAI_TOKEN` | (Optional) Token for restricted or early access Civitai models. | `comfydl set CIVITAI_TOKEN your_token` |
+| `HF_TOKEN` | (Optional) Token for private or gated Hugging Face models. | `comfydl set HF_TOKEN your_token` |
+| `MODEL_SOURCES_PATH`| (Optional) Custom directory to search for YAML model sources. | `comfydl set MODEL_SOURCES_PATH /custom/sources` |
 
 ## Usage
 
@@ -156,7 +147,11 @@ You can quickly download a model from Civitai using its Model Version ID or dire
 # Using Model Version ID
 comfydl civitai 1234567
 
-# Using Direct Download URL
+# Using Civitai AIR URN (must contain @version_id)
+comfydl civitai "urn:air:zimageturbo:lora:civitai:2207883@2573412"
+
+# Using Direct Download URL or Model URL with modelVersionId
+comfydl civitai "https://civitai.com/models/2207883?modelVersionId=2573412"
 comfydl civitai "https://civitai.com/api/download/models/12345?type=Model&format=SafeTensor"
 
 # Optional: Override ComfyUI root path

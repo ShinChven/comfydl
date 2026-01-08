@@ -62,6 +62,19 @@ def extract_version_id(input_str):
     if str(input_str).isdigit():
         return str(input_str)
         
+    # Try query param modelVersionId
+    match = re.search(r'modelVersionId=(\d+)', str(input_str))
+    if match:
+        return match.group(1)
+
+    # Try AIR URN @version_id
+    # urn:air:zimageturbo:lora:civitai:2207883@2573412
+    if str(input_str).startswith("urn:air:"):
+        match = re.search(r'@(\d+)$', str(input_str))
+        if match:
+            return match.group(1)
+        return None
+
     # Try regex for URL
     # Pattern: models/(\d+)
     match = re.search(r'models/(\d+)', str(input_str))
