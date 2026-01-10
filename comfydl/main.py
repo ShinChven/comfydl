@@ -7,6 +7,8 @@ from pathlib import Path
 from .config import set_config_value, get_config_value
 from .utils import check_downloader, download_file, get_remote_file_size
 import questionary
+from . import __version__
+
 
 def format_size(size_bytes):
     if size_bytes == 0:
@@ -386,7 +388,7 @@ def list_sources_status(comfyui_path):
         print_source_tree(source_name, items_status, indent="  ")
 
 def main():
-    parser = argparse.ArgumentParser(description="ComfyDL: ComfyUI Model Downloader")
+    parser = argparse.ArgumentParser(description="ComfyDL: ComfyUI Model Downloader\nhttps://github.com/ShinChven/comfydl")
     subparsers = parser.add_subparsers(dest="command")
     
     # Set command
@@ -524,7 +526,8 @@ def main():
             return
 
     # If not a subcommand, use the original parser logic for sources
-    parser = argparse.ArgumentParser(description="ComfyDL: ComfyUI Model Downloader")
+    parser = argparse.ArgumentParser(description="ComfyDL: ComfyUI Model Downloader\nhttps://github.com/ShinChven/comfydl")
+    parser.add_argument("--version", action="version", version=f"%(prog)s {__version__}")
     parser.add_argument("model_source", nargs="?", help="Model source name (e.g. 'flux') or path to YAML config")
     parser.add_argument("comfyui_path", nargs="?", help="ComfyUI root directory override")
     

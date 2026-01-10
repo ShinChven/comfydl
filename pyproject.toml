@@ -22,6 +22,9 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 
+[project.urls]
+Repository = "https://github.com/ShinChven/comfydl"
+
 [project.scripts]
 comfydl = "comfydl.main:main"
 
