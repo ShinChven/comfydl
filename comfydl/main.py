@@ -552,10 +552,10 @@ Usage:
     registry_parser = subparsers.add_parser("registry", help="Manage model registries")
     registry_subparsers = registry_parser.add_subparsers(dest="registry_command", required=True)
 
-    # registry add
-    reg_add = registry_subparsers.add_parser("add", help="Add a registry URL")
-    reg_add.add_argument("url", help="URL of the registry JSON")
-    reg_add.add_argument("--name", help="Optional name for the registry")
+    # registry set
+    reg_set = registry_subparsers.add_parser("set", help="Set a registry URL")
+    reg_set.add_argument("name", help="Name for the registry")
+    reg_set.add_argument("url", help="URL of the registry JSON")
 
     # registry delete
     reg_del = registry_subparsers.add_parser("delete", help="Delete a registry")
@@ -618,22 +618,10 @@ Usage:
         elif sys.argv[1] == "registry":
             args, _ = parser.parse_known_args()
             
-            if args.registry_command == "add":
+            if args.registry_command == "set":
                 url = args.url
                 name = args.name
-                if not name:
-                    # Deduce name from URL filename
-                    filename = os.path.basename(url)
-                    if filename.lower().endswith('.json'):
-                        name = filename[:-5]
-                    else:
-                        name = filename
                 
-                # Basic validation
-                if not name:
-                    print("Error: Could not determine registry name from URL. Please use --name.")
-                    sys.exit(1)
-                    
                 add_registry(name, url)
                 update_registry(name)
                 
