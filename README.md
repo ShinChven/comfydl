@@ -18,7 +18,7 @@ comfydl common_vae
 comfydl qwen_image_edit
 comfydl chilloutmix
 comfydl civitai 354657 # By Version ID
-comfydl civitai "urn:air:zimageturbo:lora:civitai:12345@12345" # By AIR URN
+comfydl civitai "urn:air:flux1:checkpoint:civitai:618692@691639" # By AIR URN
 ```
 
 ## Features
