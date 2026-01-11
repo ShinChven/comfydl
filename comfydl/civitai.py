@@ -69,7 +69,6 @@ def extract_version_id(input_str):
         return match.group(1)
 
     # Try AIR URN @version_id
-    # urn:air:zimageturbo:lora:civitai:2207883@2573412
     if str(input_str).startswith("urn:air:"):
         match = re.search(r'@(\d+)$', str(input_str))
         if match:

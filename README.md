@@ -94,12 +94,38 @@ Download a specific model set directly by name:
 ```bash
 # General syntax
 comfydl <model_source_name> [comfyui_path_override]
+comfydl <model_source_name> -y  # Skip confirmation
 
 # Examples
 comfydl flux
 comfydl ipadapters
 comfydl z_image
 ```
+
+### Direct Resource Download
+
+Download any model directly using a Standard URL or an **AI Resource Identifier (AIR)**. `comfydl` will help you organize it.
+
+```bash
+# Download from a Standard URL (interactive folder selection)
+comfydl https://example.com/model.safetensors
+
+# Download using AI Resource Identifier (AIR) (automatically switches to Civitai mode)
+comfydl "urn:air:flux1:checkpoint:civitai:618692@691639"
+
+# Download matching a known source (auto-selects destination)
+comfydl https://huggingface.co/comfyanonymous/ControlNet-v1-1_fp16_safetensors/resolve/main/control_v11p_sd15_inpaint_fp16.safetensors
+
+# Download and specify the destination folder (non-interactive)
+comfydl https://example.com/model.safetensors -d models/checkpoints
+
+# Skip confirmation prompts
+comfydl https://example.com/model.safetensors -y
+```
+
+**Features:**
+*   **Intelligent Suggestion**: It searches your known model sources to automatically suggest the correct folder (e.g. if the URL matches a known ControlNet model, it suggests `models/controlnet`).
+*   **Disk Space Check**: Automatically checks if you have enough free space before downloading.
 
 ### Listing & Checking Models
 
@@ -141,18 +167,18 @@ comfydl rm flux1 -f
 
 ### Civitai Download
 
-You can quickly download a model from Civitai using its Model Version ID or directly using the download URL. The tool will automatically determine the correct folder (e.g., `models/checkpoints`, `models/loras`) based on the model type.
+You can quickly download a model from Civitai using its Model Version ID, **AI Resource Identifier (AIR)**, or directly using the download URL. The tool will automatically determine the correct folder (e.g., `models/checkpoints`, `models/loras`) based on the model type.
 
 ```bash
 # Using Model Version ID
 comfydl civitai 1234567
 
-# Using Civitai AIR URN (must contain @version_id)
-comfydl civitai "urn:air:zimageturbo:lora:civitai:2207883@2573412"
+# Using AI Resource Identifier (AIR) (must contain @version_id)
+comfydl civitai "urn:air:flux1:checkpoint:civitai:618692@691639"
 
 # Using Direct Download URL or Model URL with modelVersionId
-comfydl civitai "https://civitai.com/models/2207883?modelVersionId=2573412"
-comfydl civitai "https://civitai.com/api/download/models/12345?type=Model&format=SafeTensor"
+comfydl civitai "https://civitai.com/models/618692?modelVersionId=691639"
+comfydl civitai "https://civitai.com/api/download/models/691639?type=Model&format=SafeTensor&size=pruned&fp=fp32"
 
 # Optional: Override ComfyUI root path
 comfydl civitai 12345 /path/to/ComfyUI

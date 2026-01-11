@@ -735,7 +735,9 @@ def main():
     print(f"Using downloader: {downloader}")
 
     if args.model_source:
-        if args.model_source.startswith("http://") or args.model_source.startswith("https://"):
+        if args.model_source.startswith("urn:air:"):
+            process_civitai_download(args.model_source, comfyui_path, skip_prompt=args.yes)
+        elif args.model_source.startswith("http://") or args.model_source.startswith("https://"):
             handle_url_download(args.model_source, comfyui_path, target_dir=args.directory, skip_prompt=args.yes, downloader=downloader)
         else:
             model_source_path = resolve_model_source(args.model_source)
