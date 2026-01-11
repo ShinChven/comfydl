@@ -12,6 +12,9 @@ def init_registries():
     registries = get_registries()
     if not registries:
         add_registry(DEFAULT_REGISTRY_NAME, DEFAULT_REGISTRY_URL)
+        # Immediately fetch the sources so the user isn't left with an empty list
+        print(f"Initializing default registry from {DEFAULT_REGISTRY_URL}...")
+        update_registry(DEFAULT_REGISTRY_NAME)
         return True
     return False
 
